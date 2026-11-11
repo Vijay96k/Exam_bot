@@ -5,8 +5,8 @@ const store = {
   del: k => { try { localStorage.removeItem(k); } catch {} }
 };
 
-let apiKey = store.get('oa_key') || '';
-let model = store.get('oa_model') || 'gpt-4o-mini';
+let apiKey = store.get('gm_key') || '';
+let model = store.get('gm_model') || 'gemini-2.5-flash';
 let questions = [], idx = 0, results = [];
 
 function show(id) {
@@ -25,39 +25,41 @@ function busy(btn, on, label) {
 }
 
 async function ai(system, user) {
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
-    body: JSON.stringify({
-      model,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user }
-      ]
-    })
-  });
+  const r = await fetch(
+    'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: 'user', parts: [{ text: user }] }],
+        generationConfig: { responseMimeType: 'application/json' }
+      })
+    }
+  );
   const d = await r.json();
   if (!r.ok) {
-    if (r.status === 401) throw new Error('Your API key was rejected. Use "Change API key" to enter it again.');
+    if (r.status === 400 || r.status === 403) throw new Error('Google rejected the request: ' + (d.error?.message || 'check your API key and model name.'));
+    if (r.status === 429) throw new Error('Rate limit reached. Wait a minute and try again.');
     throw new Error(d.error?.message || 'Request failed (' + r.status + ')');
   }
-  return JSON.parse(d.choices[0].message.content);
+  const text = d.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+  return JSON.parse(text.replace(/```json|```/g, '').trim());
 }
 
 /* 1. API key */
 $('#saveKey').onclick = () => {
   const k = $('#keyIn').value.trim();
-  if (!k.startsWith('sk-')) return say('That does not look like an OpenAI key. It should start with "sk-".');
+  if (k.length < 20) return say('That key looks too short. Copy the full key from Google AI Studio.');
   apiKey = k;
-  model = $('#modelIn').value.trim() || 'gpt-4o-mini';
-  store.set('oa_key', apiKey);
-  store.set('oa_model', model);
+  model = $('#modelIn').value.trim() || 'gemini-2.5-flash';
+  store.set('gm_key', apiKey);
+  store.set('gm_model', model);
   $('#keyIn').value = '';
   show('setup');
 };
 $('#reset').onclick = () => {
-  store.del('oa_key');
+  store.del('gm_key');
   apiKey = '';
   $('#modelIn').value = model;
   show('key');
