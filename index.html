@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock Exam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Mock Exam</h1>
+  <button id="reset" class="link" hidden>Change API key</button>
+</header>
+
+<main>
+  <!-- 1. API key -->
+  <section id="key">
+    <h2>Enter your OpenAI API key</h2>
+    <p class="note">Saved only in this browser. It is sent only to OpenAI.</p>
+    <label for="keyIn">API key</label>
+    <input id="keyIn" type="password" placeholder="sk-..." autocomplete="off">
+    <label for="modelIn">Model</label>
+    <input id="modelIn" type="text" value="gpt-4o-mini">
+    <button id="saveKey">Save and continue</button>
+  </section>
+
+  <!-- 2. Setup -->
+  <section id="setup" hidden>
+    <h2>What are you being examined on?</h2>
+    <label for="topics">Syllabus topics</label>
+    <textarea id="topics" rows="6" placeholder="e.g. Process scheduling, deadlocks, virtual memory"></textarea>
+    <div class="row">
+      <div>
+        <label for="count">Questions</label>
+        <select id="count"><option>3</option><option selected>5</option><option>8</option><option>10</option></select>
+      </div>
+      <div>
+        <label for="level">Difficulty</label>
+        <select id="level"><option>Easy</option><option selected>Medium</option><option>Hard</option></select>
+      </div>
+    </div>
+    <button id="start">Start exam</button>
+  </section>
+
+  <!-- 3. Question -->
+  <section id="exam" hidden>
+    <p class="meta" id="progress"></p>
+    <p class="question" id="question"></p>
+    <label for="answer">Your answer</label>
+    <textarea id="answer" class="sheet" rows="9"></textarea>
+    <button id="submit">Mark my answer</button>
+
+    <div id="result" hidden>
+      <div class="score" aria-label="Score"><span id="scoreNum"></span><small>/10</small></div>
+      <h3>Examiner's notes</h3>
+      <p id="feedback" class="red-note"></p>
+      <h3>Model answer</h3>
+      <p id="model"></p>
+      <button id="next">Next question</button>
+    </div>
+  </section>
+
+  <!-- 4. Summary -->
+  <section id="summary" hidden>
+    <h2>Result</h2>
+    <p class="big" id="total"></p>
+    <h3>By topic</h3>
+    <ul id="byTopic"></ul>
+    <div class="row">
+      <button id="retryWeak">Practise weak topics</button>
+      <button id="again" class="ghost">New exam</button>
+    </div>
+  </section>
+
+  <p id="msg" role="status"></p>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
